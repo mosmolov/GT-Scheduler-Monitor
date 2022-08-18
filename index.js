@@ -70,6 +70,9 @@ app.get('/offboard', (req, res) => {
     if (complete == 'true') {
         for (let courseObj of courses) {
             courseObj.removeNumber(number);
+            if (courseObj.numbers.length == 0) {
+                courses = courses.filter(c => c.crn != courseObj.crn);
+            }
         }
         res.send("You have been removed from all course notifications");
         saveChanges();
@@ -89,6 +92,9 @@ app.get('/offboard', (req, res) => {
     }
     let course = courses[courseIdx];
     course.removeNumber(number);
+    if (course.numbers.length == 0) {
+        courses = courses.filter(c => c.crn != course.crn);
+    }
     res.send(course.courseName + " has been removed from your notifications");
     saveChanges();
     client.messages
