@@ -115,6 +115,21 @@ app.get('/get-courses', (req, res) => {
     res.send(courseList);
 });
 
+app.get('/get-all-notifiers', (req, res) => {
+    let courseList = [];
+    for (let course of courses) {
+        let obj = {
+            courseName: course.courseName,
+            numbers: []
+        }
+        for (let number of course.numbers) {
+            obj.numbers.push(number.number);
+        }
+        courseList.push(obj);
+    }
+    res.send(courseList);
+});
+
 function saveChanges() {
     fs.writeFileSync('courses.json', JSON.stringify(courses));
 }
