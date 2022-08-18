@@ -167,6 +167,7 @@ function updateCourseData() {
                                 })
                                 .then(message => { });
                             number.updateNextNotifyWaitlist();
+                            console.log('Sent waitlist notification for ' + number.number + ' in ' + courseName);
                         }
                     }
                 }
@@ -182,11 +183,12 @@ function updateCourseData() {
                                 })
                                 .then(message => { });
                             number.updateNextNotifySeats();
+                            console.log('Sent seat notification for ' + number.number + ' in ' + courseName);
                         }
                     }
                 }
             } catch (e) {
-                console.error(e);
+                // console.error(e);
             }
         })()
     }
