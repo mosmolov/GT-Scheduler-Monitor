@@ -100,6 +100,21 @@ app.get('/offboard', (req, res) => {
     console.log('Removed number ' + number + ' from CRN ' + crn);
 });
 
+app.get('/get-courses', (req, res) => {
+    let number = req.query.number;
+    if (!number) {
+        res.status(400).send('Number is a required x-www-form-urlencoded field');
+        return;
+    }
+    let courseList = [];
+    for (let course of courses) {
+        if (course.numbers.find(num => num.number == number)) {
+            courseList.push(course.courseName);
+        }
+    }
+    res.send(courseList);
+});
+
 function saveChanges() {
     fs.writeFileSync('courses.json', JSON.stringify(courses));
 }
