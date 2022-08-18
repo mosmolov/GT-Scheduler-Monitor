@@ -19,7 +19,7 @@ class Course {
         this.crn = crn;
         this.numbers = [];
 
-        if (this.numbers != null) {
+        if (numbers != null) {
             for (let number of numbers) {
                 this.numbers.push(new NumberNotifier(number.number));
             }

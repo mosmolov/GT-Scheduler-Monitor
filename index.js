@@ -42,8 +42,15 @@ app.get('/onboard', (req, res) => {
             );
         }
         courses[classIdx].addNumber(number);
-        res.send("Ok");
+        res.send(`You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`);
         saveChanges();
+        client.messages
+        .create({
+            body: `You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`,
+            from: twilio_number,
+            to: '+1' + number
+        })
+        .then(message => { });
     } catch (e) {
         res.status(500).send("Internal Server Error");
         console.error(e);
@@ -65,6 +72,12 @@ app.get('/offboard', (req, res) => {
         }
         res.send("You have been removed from all course notifications");
         saveChanges();
+        client.messages
+        .create({
+            body: `You have been unsubscribed from all course notifications!`,
+            from: twilio_number,
+            to: '+1' + number
+        });
         return;
     }
     let courseIdx = courses.findIndex(course => course.crn == crn);
@@ -76,6 +89,12 @@ app.get('/offboard', (req, res) => {
     course.removeNumber(number);
     res.send(course.courseName + " has been removed from your notifications");
     saveChanges();
+    client.messages
+    .create({
+        body: `You have been unsubscribed from ${course.courseName}! Subscribe: ${urlBase + '/onboard?crn=' + crn + '&number=' + number}`,
+        from: twilio_number,
+        to: '+1' + number
+    });
 });
 
 function saveChanges() {
