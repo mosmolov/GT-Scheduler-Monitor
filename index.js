@@ -43,6 +43,7 @@ app.get('/onboard', (req, res) => {
         }
         courses[classIdx].addNumber(number);
         res.send(`You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`);
+        console.log('Added number ' + number + ' to CRN ' + crn);
         saveChanges();
         client.messages
         .create({
@@ -78,6 +79,7 @@ app.get('/offboard', (req, res) => {
             from: twilio_number,
             to: '+1' + number
         });
+        console.log('Removed number ' + number + ' from all courses');
         return;
     }
     let courseIdx = courses.findIndex(course => course.crn == crn);
@@ -95,6 +97,7 @@ app.get('/offboard', (req, res) => {
         from: twilio_number,
         to: '+1' + number
     });
+    console.log('Removed number ' + number + ' from CRN ' + crn);
 });
 
 function saveChanges() {
