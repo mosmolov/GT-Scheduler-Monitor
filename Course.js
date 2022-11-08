@@ -36,7 +36,7 @@ class Course {
     }
 
     getUrl() {
-        return `https://gt-scheduler.azurewebsites.net/proxy/class_section?term=202208&crn=` + this.crn;
+        return `https://gt-scheduler.azurewebsites.net/proxy/class_section?term=202302&crn=` + this.crn;
     }
 
     setData(courseName, seatsCap, seatsActual, seatsRemaining, waitCap, waitActual, waitRemaining) {
