@@ -1,3 +1,5 @@
+const currentTerm = '202308';
+
 class NumberNotifier {
     constructor(number) {
         this.number = number;
@@ -36,7 +38,7 @@ class Course {
     }
 
     getUrl() {
-        return `https://gt-scheduler.azurewebsites.net/proxy/class_section?term=202302&crn=` + this.crn;
+        return `https://gt-scheduler.azurewebsites.net/proxy/class_section?term=${currentTerm}&crn=` + this.crn;
     }
 
     setData(courseName, seatsCap, seatsActual, seatsRemaining, waitCap, waitActual, waitRemaining) {

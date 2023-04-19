@@ -13,7 +13,8 @@ const cheerio = require("cheerio");
 const axios = require('axios');
 const app = require('./api');
 const { Course } = require("./Course");
-
+let crnMapping;
+const currentTerm = '202308';
 
 let courses = [];
 
@@ -147,13 +148,17 @@ function updateCourseData() {
                 let url = course.getUrl();
                 let response = await axios.get(url);
                 let $ = cheerio.load(response.data, null, false);
-                let courseName = $('.ddlabel')[0].children[0].data;
-                let seatsCap = $('.datadisplaytable')[1].children[2].children[1].children[3].children[0].data;
-                let seatsActual = $('.datadisplaytable')[1].children[2].children[1].children[5].children[0].data
-                let seatsRemaining = $('.datadisplaytable')[1].children[2].children[1].children[7].children[0].data
-                let waitCap = $('.datadisplaytable')[1].children[2].children[3].children[3].children[0].data;
-                let waitActual = $('.datadisplaytable')[1].children[2].children[3].children[5].children[0].data;
-                let waitListRemaining = $('.datadisplaytable')[1].children[2].children[3].children[7].children[0].data;
+                let courseName = crnMapping.get(course.crn);
+                let sectionChildren = $('section').children();
+                let dataValues = sectionChildren.map((i, el) => {
+                    return el?.firstChild?.data
+                })
+                let seatsCap = dataValues[3];
+                let seatsActual = dataValues[1];
+                let seatsRemaining = dataValues[5];
+                let waitCap = dataValues[7];
+                let waitActual = dataValues[9];
+                let waitListRemaining = dataValues[11];
                 course.setData(courseName, seatsCap, seatsActual, seatsRemaining, waitCap, waitActual, waitListRemaining);
 
                 if (waitListRemaining > 0) {
@@ -188,12 +193,29 @@ function updateCourseData() {
                     }
                 }
             } catch (e) {
-                // console.error(e);
+                console.error(e);
             }
         })()
     }
 }
 
+async function getMapping() {
+    let response = await axios.get(`https://gt-scheduler.github.io/crawler-v2/${currentTerm}.json`)
+    let data = response.data;
+    let courses = data.courses;
+    
+    const mapping = new Map();
+
+    for (const courseCode in courses) {
+        const course = courses[courseCode];
+        const courseName = course[0];
+        for (const sectionLetter in course[1]) {
+            const section = course[1][sectionLetter];
+            mapping.set(section[0], `${sectionLetter} - ${courseName}`);
+        }
+    }
+
+    crnMapping = mapping;
+}
+
 setInterval(updateCourseData, 30 * 1000);
-
-
