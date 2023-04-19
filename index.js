@@ -16,6 +16,7 @@ const { Course } = require("./Course");
 let crnMapping;
 const currentTerm = '202308';
 
+let axiosErrorCount = 0;
 let courses = [];
 
 try {
@@ -201,7 +202,13 @@ function updateCourseData() {
                     }
                 }
             } catch (e) {
-                console.error(e);
+                if (e instanceof axios.AxiosError) {
+                    axiosErrorCount++;
+                    if (axiosErrorCount % 10 == 0) {
+                        console.error('Axios error count: ' + axiosErrorCount);
+                    }
+                } else
+                    console.error(e);
             }
         })()
     }
