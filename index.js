@@ -30,8 +30,8 @@ try {
 app.get('/onboard', (req, res) => {
     let number = req.query.number;
     let crn = req.query.crn;
-    let justSeats = req.query.justseats;
-    let justWaitlist = req.query.justwaitlist;
+    let justSeats = req.query.justseats === 'true';
+    let justWaitlist = req.query.justwaitlist === 'true';
 
     if (!number || !crn) {
         res.status(400).send('Number and CRN are requered x-www-form-urlencoded fields');
