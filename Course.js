@@ -1,10 +1,12 @@
 const currentTerm = '202308';
 
 class NumberNotifier {
-    constructor(number) {
+    constructor(number, justSeats, justWaitlist) {
         this.number = number;
         this.nextNotifyWaitlist = 0; // new Date(Date.now() + 5 * 60 * 1000);
         this.nextNotifySeats = new Date(Date.now() + 5 * 60 * 1000);
+        this.justSeats = justSeats;
+        this.justWaitlist = justWaitlist;
     }
 
     updateNextNotifyWaitlist() {
@@ -28,9 +30,9 @@ class Course {
         }
     }
 
-    addNumber(number) {
+    addNumber(number, justSeats, justWaitlist) {
         if (this.numbers.findIndex(num => num == number) < 0)
-            this.numbers.push(new NumberNotifier(number));
+            this.numbers.push(new NumberNotifier(number, justSeats, justWaitlist));
     }
 
     removeNumber(number) {

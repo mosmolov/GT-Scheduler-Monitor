@@ -30,6 +30,9 @@ try {
 app.get('/onboard', (req, res) => {
     let number = req.query.number;
     let crn = req.query.crn;
+    let justSeats = req.query.justseats;
+    let justWaitlist = req.query.justwaitlist;
+
     if (!number || !crn) {
         res.status(400).send('Number and CRN are requered x-www-form-urlencoded fields');
         return;
@@ -42,7 +45,7 @@ app.get('/onboard', (req, res) => {
                 new Course(crn, null)
             );
         }
-        courses[classIdx].addNumber(number);
+        courses[classIdx].addNumber(number, justSeats, justWaitlist);
         res.send(`You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`);
         console.log('Added number ' + number + ' to CRN ' + crn);
         saveChanges();
@@ -127,10 +130,15 @@ app.get('/get-all-notifiers', (req, res) => {
     for (let course of courses) {
         let obj = {
             courseName: course.courseName,
+            crn: course.crn,
             numbers: []
         }
         for (let number of course.numbers) {
-            obj.numbers.push(number.number);
+            obj.numbers.push({
+                number: number.number,
+                seatNotify: number.justSeats,
+                waitlistNotify: number.justWaitlist
+            });
         }
         courseList.push(obj);
     }
@@ -163,7 +171,7 @@ function updateCourseData() {
 
                 if (waitListRemaining > 0) {
                     for (let number of course.numbers) {
-                        if (Date.now() > number.nextNotifyWaitlist) {
+                        if (Date.now() > number.nextNotifyWaitlist && number.justWaitlist) {
                             client.messages
                                 .create({
                                     body: `There is a waitlist spot in ${courseName}! Unsubscribe: ${urlBase + '/offboard?crn=' + course.crn + '&number=' + number.number}`,
@@ -179,7 +187,7 @@ function updateCourseData() {
 
                 if (seatsRemaining > 0) {
                     for (let number of course.numbers) {
-                        if (Date.now() > number.nextNotifySeats) {
+                        if (Date.now() > number.nextNotifySeats && number.justSeats) {
                             client.messages
                                 .create({
                                     body: `There is a seat available in ${courseName}! Unsubscribe: ${urlBase + '/offboard?crn=' + course.crn + '&number=' + number.number}`,
@@ -218,4 +226,5 @@ async function getMapping() {
     crnMapping = mapping;
 }
 
+getMapping();
 setInterval(updateCourseData, 30 * 1000);

@@ -21,10 +21,12 @@
 
                 var crn = e.target[0].value;
                 var number = e.target[1].value;
+                var justSeats = e.target[2].checked;
+                var justWaitlist = e.target[3].checked;
 
                 $.ajax({
                     type: "GET",
-                    url: `/onboard?crn=${crn}&number=${number}`,
+                    url: `/onboard?crn=${crn}&number=${number}&justseats=${justSeats}&justwaitlist=${justWaitlist}`,
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (data) {
@@ -77,10 +79,18 @@
             <label for="number">Phone Number</label>
             <input type="number" class="form-control" id="number" placeholder="1234567890">
         </div>
-        <!-- <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="exampleCheck1">
-            <label class="form-check-label" for="exampleCheck1">Check me out</label>
-        </div> -->
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="just-seats" checked>
+            <label class="form-check-label" for="just-seats">
+              Seats
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="just-waitlist" checked>
+            <label class="form-check-label" for="just-waitlist">
+              Waitlist
+            </label>
+        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <h1>Offboard</h1>
