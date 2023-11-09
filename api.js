@@ -10,12 +10,15 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/secureadmin', (req, res) => {
+  res.sendFile(__dirname + '/admin.html');
+});
 
 app.listen(mainPort, () => {
   console.log(`App listening on port ${mainPort}`)
 });
 
 app.listen(tlsPort, () => {
-    console.log(`App listening on port ${tlsPort}`)
+  console.log(`App listening on port ${tlsPort}`)
 });
 module.exports = app;

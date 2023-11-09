@@ -1,4 +1,4 @@
-const currentTerm = '202308';
+const currentTerm = '202402';
 
 class NumberNotifier {
     constructor(number, justSeats, justWaitlist) {

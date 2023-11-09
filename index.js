@@ -18,12 +18,20 @@ const currentTerm = '202308';
 
 let axiosErrorCount = 0;
 let courses = [];
+let whitelist = [];
 
 try {
     let data = JSON.parse(fs.readFileSync('courses.json', 'utf-8'));
     for (const course of data) {
         courses.push(new Course(course.crn, course.numbers))
     }
+    console.log('Loaded ' + courses.length + ' courses from file');
+
+    let whitelistData = JSON.parse(fs.readFileSync('whitelist.json', 'utf-8'));
+    for (const number of whitelistData) {
+        whitelist.push(number);
+    }
+    console.log('Loaded ' + whitelist.length + ' numbers from file');
 } catch (e) {
 
 }
@@ -33,6 +41,11 @@ app.get('/onboard', (req, res) => {
     let crn = req.query.crn;
     let justSeats = req.query.justseats === 'true';
     let justWaitlist = req.query.justwaitlist === 'true';
+
+    if (!whitelist.includes(number)) {
+        res.status(403).send('You are not whitelisted to use this service');
+        return;
+    }
 
     if (!number || !crn) {
         res.status(400).send('Number and CRN are requered x-www-form-urlencoded fields');
@@ -51,12 +64,12 @@ app.get('/onboard', (req, res) => {
         console.log('Added number ' + number + ' to CRN ' + crn);
         saveChanges();
         client.messages
-        .create({
-            body: `You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`,
-            from: twilio_number,
-            to: '+1' + number
-        })
-        .then(message => { });
+            .create({
+                body: `You are now subscribed to notifications for CRN ${crn}! Unsubscribe: ${urlBase + '/offboard?crn=' + crn + '&number=' + number}`,
+                from: twilio_number,
+                to: '+1' + number
+            })
+            .then(message => { });
     } catch (e) {
         res.status(500).send("Internal Server Error");
         console.error(e);
@@ -82,11 +95,11 @@ app.get('/offboard', (req, res) => {
         res.send("You have been removed from all course notifications");
         saveChanges();
         client.messages
-        .create({
-            body: `You have been unsubscribed from all course notifications!`,
-            from: twilio_number,
-            to: '+1' + number
-        });
+            .create({
+                body: `You have been unsubscribed from all course notifications!`,
+                from: twilio_number,
+                to: '+1' + number
+            });
         console.log('Removed number ' + number + ' from all courses');
         return;
     }
@@ -103,16 +116,20 @@ app.get('/offboard', (req, res) => {
     res.send(course.courseName + " has been removed from your notifications");
     saveChanges();
     client.messages
-    .create({
-        body: `You have been unsubscribed from ${course.courseName}! Subscribe: ${urlBase + '/onboard?crn=' + crn + '&number=' + number}`,
-        from: twilio_number,
-        to: '+1' + number
-    });
+        .create({
+            body: `You have been unsubscribed from ${course.courseName}! Subscribe: ${urlBase + '/onboard?crn=' + crn + '&number=' + number}`,
+            from: twilio_number,
+            to: '+1' + number
+        });
     console.log('Removed number ' + number + ' from CRN ' + crn);
 });
 
 app.get('/get-courses', (req, res) => {
     let number = req.query.number;
+    if (!whitelist.includes(number)) {
+        res.status(403).send('You are not whitelisted to use this service');
+        return;
+    }
     if (!number) {
         res.status(400).send('Number is a required x-www-form-urlencoded field');
         return;
@@ -146,8 +163,39 @@ app.get('/get-all-notifiers', (req, res) => {
     res.send(courseList);
 });
 
+app.get('/whitelistAdd', (req, res) => {
+    let number = req.query.number;
+    if (!number) {
+        res.status(400).send('Number is a required x-www-form-urlencoded field');
+        return;
+    }
+    if (whitelist.includes(number)) {
+        res.status(400).send('Number already whitelisted');
+        return;
+    }
+    whitelist.push(number);
+    res.send('Number ' + number + ' has been whitelisted');
+    saveChanges();
+});
+
+app.get('/whitelistRemove', (req, res) => {
+    let number = req.query.number;
+    if (!number) {
+        res.status(400).send('Number is a required x-www-form-urlencoded field');
+        return;
+    }
+    if (!whitelist.includes(number)) {
+        res.status(400).send('Number not whitelisted');
+        return;
+    }
+    whitelist = whitelist.filter(num => num != number);
+    res.send('Number ' + number + ' has been removed from the whitelist');
+    saveChanges();
+});
+
 function saveChanges() {
     fs.writeFileSync('courses.json', JSON.stringify(courses));
+    fs.writeFileSync('whitelist.json', JSON.stringify(whitelist));
 }
 
 function updateCourseData() {
@@ -218,7 +266,7 @@ async function getMapping() {
     let response = await axios.get(`https://gt-scheduler.github.io/crawler-v2/${currentTerm}.json`)
     let data = response.data;
     let courses = data.courses;
-    
+
     const mapping = new Map();
 
     for (const courseCode in courses) {
