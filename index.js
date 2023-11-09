@@ -50,6 +50,7 @@ app.get('/onboard', (req, res) => {
 
     if (!whitelist.includes(number)) {
         res.status(403).send('You are not whitelisted to use this service');
+        console.log('Attempted to add number ' + number + ' to CRN ' + crn + ' but was not whitelisted');
         return;
     }
 
