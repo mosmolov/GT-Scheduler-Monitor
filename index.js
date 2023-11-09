@@ -26,14 +26,20 @@ try {
         courses.push(new Course(course.crn, course.numbers))
     }
     console.log('Loaded ' + courses.length + ' courses from file');
+} catch (e) {
+    console.log('No courses file found, creating new one');
+    saveChanges();
+}
 
+try {
     let whitelistData = JSON.parse(fs.readFileSync('whitelist.json', 'utf-8'));
     for (const number of whitelistData) {
         whitelist.push(number);
     }
     console.log('Loaded ' + whitelist.length + ' numbers from file');
 } catch (e) {
-
+    console.log('No whitelist file found, creating new one');
+    saveChanges();
 }
 
 app.get('/onboard', (req, res) => {
